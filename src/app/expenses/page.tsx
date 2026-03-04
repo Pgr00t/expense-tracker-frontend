@@ -23,7 +23,7 @@ export default function ExpensesLedger() {
             setLoading(true);
             const data = await getExpenses();
             setExpenses(data);
-        } catch (error) {
+        } catch {
             toast.error("Failed to fetch ledger data");
         } finally {
             setLoading(false);
@@ -47,7 +47,7 @@ export default function ExpensesLedger() {
             await deleteExpense(id);
             toast.success("Expense deleted successfully");
             fetchExpenses();
-        } catch (error) {
+        } catch {
             toast.error("Failed to delete expense");
         } finally {
             setDeletingId(null);

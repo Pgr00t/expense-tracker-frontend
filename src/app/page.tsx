@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 const COLORS = ['#818cf8', '#c084fc', '#f472b6', '#fbbf24', '#34d399', '#60a5fa'];
 
 export default function Dashboard() {
-  const [summary, setSummary] = useState({ total_amount: 0, category_breakdown: [] });
+  const [summary, setSummary] = useState<{ total_amount: number; category_breakdown: { category: string; total: number }[] }>({ total_amount: 0, category_breakdown: [] });
   const [loading, setLoading] = useState(true);
   const [targetCurrency, setTargetCurrency] = useState("EUR");
   const [convertedAmount, setConvertedAmount] = useState<number | null>(null);
@@ -22,7 +22,7 @@ export default function Dashboard() {
   const fetchSummary = async () => {
     try {
       const data = await getExpenseSummary();
-      setSummary(data as any);
+      setSummary(data);
       // Reset conversion when summary changes
       setConvertedAmount(null);
     } catch (error) {
@@ -33,15 +33,15 @@ export default function Dashboard() {
     }
   };
 
-  const handleConvert = async () => {
+  const handleConvert = async (currency = targetCurrency) => {
     if (summary.total_amount <= 0) return;
     setConverting(true);
     try {
-      const data = await convertCurrency(summary.total_amount, "USD", targetCurrency);
+      const data = await convertCurrency(summary.total_amount, "USD", currency);
       setConvertedAmount(data.converted_amount);
-      toast.success(`Converted to ${targetCurrency}`);
+      toast.success(`Converted to ${currency}`);
     } catch (error) {
-      toast.error("Currency conversion failed (Frankfurter API)");
+      toast.error("Currency conversion failed");
       console.error(error);
     } finally {
       setConverting(false);
@@ -94,7 +94,10 @@ export default function Dashboard() {
             <div className="flex items-center space-x-3 mt-4">
               <select
                 value={targetCurrency}
-                onChange={(e) => setTargetCurrency(e.target.value)}
+                onChange={(e) => {
+                  setTargetCurrency(e.target.value);
+                  handleConvert(e.target.value);
+                }}
                 className="bg-black/50 border border-gray-700 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 outline-none"
               >
                 <option value="EUR">EUR (€)</option>
@@ -105,7 +108,7 @@ export default function Dashboard() {
                 <option value="INR">INR (₹)</option>
               </select>
               <button
-                onClick={handleConvert}
+                onClick={() => handleConvert(targetCurrency)}
                 disabled={converting || summary.total_amount <= 0}
                 className="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center"
               >
@@ -150,7 +153,7 @@ export default function Dashboard() {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) => `$${value.toFixed(2)}`}
+                  formatter={(value: number | string | undefined) => `$${Number(value || 0).toFixed(2)}`}
                   contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }}
                 />
                 <Legend />
