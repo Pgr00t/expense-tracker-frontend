@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Default to local Django server if not provided via environment variable
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://51.21.248.167/api/";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
